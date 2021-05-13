@@ -107,6 +107,8 @@
             this.ricbCalendarList = new DevExpress.XtraEditors.Repository.RepositoryItemComboBox();
             this.bbiSynchronize = new DevExpress.XtraBars.BarButtonItem();
             this.skinPaletteRibbonGalleryBarItem1 = new DevExpress.XtraBars.SkinPaletteRibbonGalleryBarItem();
+            this.barButtonItem1 = new DevExpress.XtraBars.BarButtonItem();
+            this.barButtonItem2 = new DevExpress.XtraBars.BarButtonItem();
             this.ribbonImageCollectionLarge = new DevExpress.Utils.ImageCollection(this.components);
             this.calendarToolsRibbonPageCategory1 = new DevExpress.XtraScheduler.UI.CalendarToolsRibbonPageCategory();
             this.appointmentRibbonPage1 = new DevExpress.XtraScheduler.UI.AppointmentRibbonPage();
@@ -116,6 +118,8 @@
             this.commonRibbonPageGroup1 = new DevExpress.XtraScheduler.UI.CommonRibbonPageGroup();
             this.printRibbonPageGroup1 = new DevExpress.XtraScheduler.UI.PrintRibbonPageGroup();
             this.ribbonPageGroup1 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
+            this.ribbonPageGroup3 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
+            this.ribbonPageGroup4 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.homeRibbonPage1 = new DevExpress.XtraScheduler.UI.HomeRibbonPage();
             this.appointmentRibbonPageGroup1 = new DevExpress.XtraScheduler.UI.AppointmentRibbonPageGroup();
             this.navigatorRibbonPageGroup1 = new DevExpress.XtraScheduler.UI.NavigatorRibbonPageGroup();
@@ -309,6 +313,7 @@
             this.schedulerControl.Views.FullWeekView.TimeRulers.Add(timeRuler2);
             this.schedulerControl.Views.WeekView.Enabled = false;
             this.schedulerControl.Views.WorkWeekView.TimeRulers.Add(timeRuler3);
+            this.schedulerControl.AllowAppointmentCopy += new DevExpress.XtraScheduler.AppointmentOperationEventHandler(this.schedulerControl_AllowAppointmentCopy);
             // 
             // schedulerStorage
             // 
@@ -343,6 +348,7 @@
             this.schedulerStorage.Resources.Mappings.Caption = "Subject";
             this.schedulerStorage.Resources.Mappings.Id = "Type";
             this.schedulerStorage.Resources.Mappings.ParentId = "UniqueID";
+            this.schedulerStorage.AppointmentsChanged += new DevExpress.XtraScheduler.PersistentObjectsEventHandler(this.schedulerStorage_AppointmentsChanged);
             // 
             // appointmentsBindingSource
             // 
@@ -426,10 +432,12 @@
             this.printPageSetupItem1,
             this.beiCalendarList,
             this.bbiSynchronize,
-            this.skinPaletteRibbonGalleryBarItem1});
+            this.skinPaletteRibbonGalleryBarItem1,
+            this.barButtonItem1,
+            this.barButtonItem2});
             this.ribbonControl.LargeImages = this.ribbonImageCollectionLarge;
             this.ribbonControl.Location = new System.Drawing.Point(0, 0);
-            this.ribbonControl.MaxItemId = 108;
+            this.ribbonControl.MaxItemId = 110;
             this.ribbonControl.Name = "ribbonControl";
             this.ribbonControl.PageCategories.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageCategory[] {
             this.calendarToolsRibbonPageCategory1});
@@ -448,6 +456,7 @@
             this.ribbonControl.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonControlStyle.Office2010;
             this.ribbonControl.Size = new System.Drawing.Size(1100, 162);
             this.ribbonControl.StatusBar = this.ribbonStatusBar;
+            this.ribbonControl.Click += new System.EventHandler(this.ribbonControl_Click);
             // 
             // appMenu
             // 
@@ -855,6 +864,20 @@
             this.skinPaletteRibbonGalleryBarItem1.Id = 106;
             this.skinPaletteRibbonGalleryBarItem1.Name = "skinPaletteRibbonGalleryBarItem1";
             // 
+            // barButtonItem1
+            // 
+            this.barButtonItem1.Caption = "Sync";
+            this.barButtonItem1.Id = 108;
+            this.barButtonItem1.Name = "barButtonItem1";
+            this.barButtonItem1.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem1_ItemClick);
+            // 
+            // barButtonItem2
+            // 
+            this.barButtonItem2.Caption = "delete";
+            this.barButtonItem2.Id = 109;
+            this.barButtonItem2.Name = "barButtonItem2";
+            this.barButtonItem2.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem2_ItemClick);
+            // 
             // ribbonImageCollectionLarge
             // 
             this.ribbonImageCollectionLarge.ImageSize = new System.Drawing.Size(32, 32);
@@ -901,7 +924,9 @@
             this.fileRibbonPage1.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
             this.commonRibbonPageGroup1,
             this.printRibbonPageGroup1,
-            this.ribbonPageGroup1});
+            this.ribbonPageGroup1,
+            this.ribbonPageGroup3,
+            this.ribbonPageGroup4});
             this.fileRibbonPage1.Name = "fileRibbonPage1";
             // 
             // commonRibbonPageGroup1
@@ -925,6 +950,18 @@
             this.ribbonPageGroup1.ItemLinks.Add(this.bbiSynchronize);
             this.ribbonPageGroup1.Name = "ribbonPageGroup1";
             this.ribbonPageGroup1.Text = "Google Calendar";
+            // 
+            // ribbonPageGroup3
+            // 
+            this.ribbonPageGroup3.ItemLinks.Add(this.barButtonItem1);
+            this.ribbonPageGroup3.Name = "ribbonPageGroup3";
+            this.ribbonPageGroup3.Text = "ribbonPageGroup3";
+            // 
+            // ribbonPageGroup4
+            // 
+            this.ribbonPageGroup4.ItemLinks.Add(this.barButtonItem2);
+            this.ribbonPageGroup4.Name = "ribbonPageGroup4";
+            this.ribbonPageGroup4.Text = "ribbonPageGroup4";
             // 
             // homeRibbonPage1
             // 
@@ -1105,7 +1142,9 @@
             this.gcSyncComponent.CalendarId = null;
             this.gcSyncComponent.CalendarService = null;
             this.gcSyncComponent.StateTrackingMode = DevExpress.XtraScheduler.GoogleCalendar.StateTrackingMode.Manual;
-            this.gcSyncComponent.Storage = null;
+            this.gcSyncComponent.Storage = this.schedulerStorage;
+            this.gcSyncComponent.ConflictDetected += new DevExpress.XtraScheduler.GoogleCalendar.ConflictDetectedEventHandler(this.gcSyncComponent_ConflictDetected_1);
+            this.gcSyncComponent.FilterAppointments += new System.EventHandler<DevExpress.XtraScheduler.GoogleCalendar.FilterAppointmentsEventArgs>(this.gcSyncComponent_FilterAppointments);
             // 
             // appointmentsTableAdapter
             // 
@@ -1267,5 +1306,9 @@
         private dossierMarcherDataSet dossierMarcherDataSet;
         private System.Windows.Forms.BindingSource appointmentsBindingSource;
         private dossierMarcherDataSetTableAdapters.AppointmentsTableAdapter appointmentsTableAdapter;
+        private DevExpress.XtraBars.BarButtonItem barButtonItem1;
+        private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup3;
+        private DevExpress.XtraBars.BarButtonItem barButtonItem2;
+        private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup4;
     }
 }
