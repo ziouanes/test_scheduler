@@ -3,19 +3,26 @@ using DevExpress.XtraBars.Ribbon;
 using DevExpress.XtraEditors;
 using DevExpress.XtraScheduler;
 using DevExpress.XtraScheduler.GoogleCalendar;
+using Google;
+using Google.Apis;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Timers; 
+using System.Windows.Forms;
+using System.Net.NetworkInformation;
 
 namespace GCSync {
     public partial class Form1 : RibbonForm {
@@ -159,8 +166,15 @@ async Task<UserCredential> AuthorizeToGoogle() {
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // TODO: This line of code loads data into the 'dossierMarcherDataSet.Appointments' table. You can move, or remove it, as needed.
-            //  this.appointmentsTableAdapter.Fill(this.dossierMarcherDataSet.Appointments);
+
+          
+
+            XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+            args.AutoCloseOptions.Delay = 3000;
+            args.Caption = "Auto-close message";
+            args.Text = "This message closes automatically after 3 seconds.";
+            args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+
 
 
 
@@ -170,59 +184,54 @@ async Task<UserCredential> AuthorizeToGoogle() {
 
         private void bbiSynchronize_ItemClick_1(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-
+           // schedulerStorage.Appointments.CustomFieldMappings.Add(new AppointmentCustomFieldMapping("gId", "dossierMarcherDataSet"));
+           // schedulerStorage.Appointments.CustomFieldMappings.Add(new AppointmentCustomFieldMapping("etag", "database_ETag_field_name"));
         }
       
 
         private void barButtonItem1_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-          //  CalendarService myService = new CalendarService("your calendar name");
-          //  myService.setUserCredentials(username, password);
-
-          //  CalendarEntry calendar;
-
-            
 
 
-            XtraMessageBoxArgs args = new XtraMessageBoxArgs();
-            args.AutoCloseOptions.Delay = 3000;
-            args.Caption = "Auto-close message";
-            args.Text = "This message closes automatically after 3 seconds.";
-            args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+            //  CalendarService myService = new CalendarService("your calendar name");
+            //  myService.setUserCredentials(username, password);
+
+            //  CalendarEntry calendar;
 
 
-            try
+
+            if (ss() == false)
             {
-                DataSet ds = new DataSet();
-                for (int count = 0; count < ds.Tables.Count; count++)
+                XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+                args.AutoCloseOptions.Delay = 2000;
+                args.Caption = "Auto-close message";
+                args.Text = "access internet connection deny";
+                args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+                //     MessageBox.Show(ex.Message);
+                XtraMessageBox.Show(args).ToString();
+
+            }
+            else
+            {
+                foreach (var item in LoadEvents(service, "ohsaurskmltarugmcflkp758i4@group.calendar.google.com", CancellationToken.None))
                 {
-                    // Get individual datatables here...
-                    DataTable table = ds.Tables[count];
+                    //CalendarService service = new CalendarService();
+                    string calendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                    service.Events.Delete(calendarId, item.Id).Execute();
+
+                    // MessageBox.Show(item.Id);
+                    //rest of the fields
+
                 }
-
-
-                dossierMarcherDataSet.Clear();
-                dossierMarcherDataSet.Tables.Clear();
 
                 this.appointmentsTableAdapter.Fill(this.dossierMarcherDataSet.Appointments);
 
-                this.gcSyncComponent.CalendarId = "46o41vhg3e1o0m0d2kmkomlvtg@group.calendar.google.com";
+                this.gcSyncComponent.CalendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
                 this.gcSyncComponent.Synchronize();
-
-
-
-                
-
-            //    this.gcSyncComponent.CalendarId = "652ilqp8u3ikeur3ac2uqd1t8s@group.calendar.google.com";
-              //  this.gcSyncComponent.Synchronize();
             }
 
-            catch (Exception ex)
-            {
-                XtraMessageBox.Show(args + ex.Message).ToString();
 
-               
-            }
+
         }
 
         private void schedulerStorage_AppointmentsChanged(object sender, PersistentObjectsEventArgs e)
@@ -255,11 +264,35 @@ async Task<UserCredential> AuthorizeToGoogle() {
 
         private void schedulerControl_AllowAppointmentCopy(object sender, AppointmentOperationEventArgs e)
         {
-      
+           //SchedulerControl1.AllowAppointmentCopy;
+           // e.Appointment.CustomFields.Item(0) = Nothing;
+           // e.Appointment.CustomFields.Item(1) = Nothing;
         }
+
+
 
         private void barButtonItem2_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
+
+
+            //XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+            //args.AutoCloseOptions.Delay = 3000;
+            //args.Caption = "Auto-close message";
+            //args.Text = "This message closes automatically after 3 seconds.";
+            //args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+            //try
+            //{
+            //    dossierMarcherDataSet.Appointments.Clear();
+            //    appointmentsTableAdapter.Update(this.dossierMarcherDataSet.Appointments);
+            //    this.gcSyncComponent.CalendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+            //    this.gcSyncComponent.Synchronize();
+            //    appointmentsTableAdapter.Update(this.dossierMarcherDataSet.Appointments);
+            //}
+            //catch (Exception ex)
+            //{
+            //    XtraMessageBox.Show(args + ex.Message).ToString();
+            //}
+
 
             /// <summary>
             //that's not delete from google calendar
@@ -283,11 +316,42 @@ async Task<UserCredential> AuthorizeToGoogle() {
             //}
             //}
 
+            //var service = new CalendarService(new BaseClientService.Initializer()
+            //{
+            //    HttpClientInitializer = credential,
+            //    ApplicationName = "Other client 1"
+            //});
 
+            //AuthenticateOauth("TmqFTGACK6NBurNip0feaK1y", "ohsaurskmltarugmcflkp758i4@group.calendar.google.com");
+            //MessageBox.Show(LoadEvents(service, "ohsaurskmltarugmcflkp758i4@group.calendar.google.com", CancellationToken.None).Select(x=>x.Start).ToString());
+
+
+
+
+            //CalendarService service = new CalendarService();
+            //string calendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+            //service.Events.Delete(calendarId, eventId).Execute();
+
+
+           // CalendarService service = new CalendarService();
+
+            foreach (var item in LoadEvents(service, "ohsaurskmltarugmcflkp758i4@group.calendar.google.com", CancellationToken.None))
+            {
+                //CalendarService service = new CalendarService();
+                string calendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                service.Events.Delete(calendarId, item.Id).Execute();
+
+               // MessageBox.Show(item.Id);
+                //rest of the fields
+
+            }
 
         }
 
-        private void gcSyncComponent_ConflictDetected_1(object sender, ConflictDetectedEventArgs e)
+
+
+
+            private void gcSyncComponent_ConflictDetected_1(object sender, ConflictDetectedEventArgs e)
         {
             e.GoogleEventIsValid = true;
 
@@ -297,10 +361,271 @@ async Task<UserCredential> AuthorizeToGoogle() {
         {
             //I test that code but it just stopping add the appointments to google calendar
 
+            //if (e.Appointment != null && e.Appointment.Description.Contains("*"))
+            //    e.Cancel = true;
 
-            //  if (e.Appointment != null && e.Appointment.Description.Contains("1"))
-            //        e.Cancel = true;
 
+           
+
+
+            //if (Program.sql_con.State == ConnectionState.Closed) Program.sql_con.Open();
+            //Program.sql_cmd = new SqlCommand("select  *  from  Appointments ", Program.sql_con);
+            //Program.db = Program.sql_cmd.ExecuteReader();
+            //while (Program.db.HasRows)
+            //{
+
+            //    if (Program.sql_con.State == ConnectionState.Closed) Program.sql_con.Open();
+            //    Program.sql_cmd = new SqlCommand("select  UniqueID  from  Appointments where Description like '%*%'", Program.sql_con);
+            //    string id = "";
+            //    Program.db = Program.sql_cmd.ExecuteReader();
+
+
+            //    id = Program.db[0].ToString();
+
+
+            //    string sql = "UPDATE Appointments SET Description = concat('*',Description) where UniqueID != @id ";
+            //    Program.sql_cmd = new SqlCommand(sql, Program.sql_con);
+            //    Program.sql_cmd.Parameters.AddWithValue("@id", int.Parse(id));
+
+
+            //    if (Program.sql_con.State == ConnectionState.Closed) Program.sql_con.Open();
+            //    Program.sql_cmd.ExecuteNonQuery();
+            //    Program.sql_con.Close();
+
+
+               
+
+            }
+
+        //holy scrypye
+
+        public IEnumerable<Event> LoadEvents(CalendarService service, string calendarId, CancellationToken cancellationToken)
+        {
+           
+                List<Event> result = new List<Event>();
+                String pageToken = null;
+                do
+                {
+                    EventsResource.ListRequest listRequest = service.Events.List(calendarId);
+                    listRequest.PageToken = pageToken;
+                    listRequest.ShowDeleted = false;
+                    Events events = null;
+                    try
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            return result;
+                        events = listRequest.Execute();
+                        result.AddRange(events.Items);
+                        pageToken = events.NextPageToken;
+
+
+                    }
+                    catch (TaskCanceledException)
+                    {
+                  
+                    //reload function
+                  //  sync();
+                }
+                    catch (GoogleApiException apiException)
+                    {
+                        //!!!process errors!!!
+                        break;
+                    }
+                } while (pageToken != null);
+                return result;
+
+
+            
+        }
+
+        public void sync()
+        {
+            //holy scrypte
+
+            try
+            {
+
+
+
+                foreach (var item in LoadEvents(service, "ohsaurskmltarugmcflkp758i4@group.calendar.google.com", CancellationToken.None))
+                {
+                    //CalendarService service = new CalendarService();
+                    string calendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                    service.Events.Delete(calendarId, item.Id).Execute();
+
+                    MessageBox.Show(item.Id);
+                    //rest of the fields
+                }
+            }
+            catch (Exception ex)
+            {
+
+                XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+                args.AutoCloseOptions.Delay = 3000;
+                args.Caption = "Auto-close message";
+                args.Text = ex.Message;
+                args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+                //     MessageBox.Show(ex.Message);
+                XtraMessageBox.Show(args).ToString();
+                sync();
+            }
+
+
+            try
+            {
+                DataSet ds = new DataSet();
+                for (int count = 0; count < ds.Tables.Count; count++)
+                {
+                    // Get individual datatables here...
+                    DataTable table = ds.Tables[count];
+                }
+
+
+                dossierMarcherDataSet.Clear();
+                dossierMarcherDataSet.Tables.Clear();
+
+                //this.appointmentsTableAdapter.Fill(this.dossierMarcherDataSet.Appointments);
+
+                //this.gcSyncComponent.CalendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                //this.gcSyncComponent.Synchronize();
+
+
+
+
+
+                //    this.gcSyncComponent.CalendarId = "652ilqp8u3ikeur3ac2uqd1t8s@group.calendar.google.com";
+                //  this.gcSyncComponent.Synchronize();
+            }
+
+            catch (Exception ex)
+            {
+
+                XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+                args.AutoCloseOptions.Delay = 3000;
+                args.Caption = "Auto-close message";
+                args.Text = ex.Message;
+                args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+                //     MessageBox.Show(ex.Message);
+                XtraMessageBox.Show(args).ToString();
+                //reload function
+                sync();
+
+            }
+
+
+
+            //holy scrypte
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (ss() == false)
+            {
+                XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+                args.AutoCloseOptions.Delay = 2000;
+                args.Caption = "Auto-close message";
+                args.Text = "access internet connection deny";
+                args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+                //     MessageBox.Show(ex.Message);
+                XtraMessageBox.Show(args).ToString();
+
+            }
+            else
+            {
+                foreach (var item in LoadEvents(service, "ohsaurskmltarugmcflkp758i4@group.calendar.google.com", CancellationToken.None))
+                {
+                    //CalendarService service = new CalendarService();
+                    string calendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                    service.Events.Delete(calendarId, item.Id).Execute();
+
+                    // MessageBox.Show(item.Id);
+                    //rest of the fields
+
+                }
+
+                this.appointmentsTableAdapter.Fill(this.dossierMarcherDataSet.Appointments);
+
+                this.gcSyncComponent.CalendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                this.gcSyncComponent.Synchronize();
+            }
+
+        }
+
+        private void barButtonItem3_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+
+
+        }
+
+
+
+        public bool ss()
+        {
+            try
+            {
+                Ping myPing = new Ping();
+                String host = "google.com";
+                byte[] buffer = new byte[32];
+                int timeout = 1000;
+                PingOptions pingOptions = new PingOptions();
+                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+                return (reply.Status == IPStatus.Success);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        //holy scrypye
+
+
+        
+
+        private void barButtonItem4_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.WindowState = FormWindowState.Normal;
+            if (this.WindowState == FormWindowState.Normal)
+            {
+                this.ShowInTaskbar = true;
+                notifyIcon1.Visible = false;
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+                notifyIcon1.BalloonTipText = "votre application a été réduite dans la barre d'état système";
+                notifyIcon1.ShowBalloonTip(1000);
+                notifyIcon1.Visible = true;
+
+
+            }
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void notifyIcon1_BalloonTipClosed(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
+        {
+           
         }
     }
 }
