@@ -23,6 +23,7 @@ using System.Windows.Forms;
 using System.Timers; 
 using System.Windows.Forms;
 using System.Net.NetworkInformation;
+using Microsoft.Win32;
 
 namespace GCSync {
     public partial class Form1 : RibbonForm {
@@ -167,7 +168,8 @@ async Task<UserCredential> AuthorizeToGoogle() {
         private void Form1_Load(object sender, EventArgs e)
         {
 
-          
+            RegistryKey reg = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            reg.SetValue("GCSync", Application.ExecutablePath.ToString());
 
             XtraMessageBoxArgs args = new XtraMessageBoxArgs();
             args.AutoCloseOptions.Delay = 3000;
@@ -200,7 +202,7 @@ async Task<UserCredential> AuthorizeToGoogle() {
 
 
 
-            if (ss() == false)
+            if (ss() == false  && testcn() == false)
             {
                 XtraMessageBoxArgs args = new XtraMessageBoxArgs();
                 args.AutoCloseOptions.Delay = 2000;
@@ -519,7 +521,7 @@ async Task<UserCredential> AuthorizeToGoogle() {
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (ss() == false)
+            if (ss() == false &&  testcn() == false)
             {
                 XtraMessageBoxArgs args = new XtraMessageBoxArgs();
                 args.AutoCloseOptions.Delay = 2000;
@@ -554,6 +556,23 @@ async Task<UserCredential> AuthorizeToGoogle() {
         private void barButtonItem3_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
 
+
+        }
+
+        public  bool testcn()
+        {
+            using (SqlConnection connection = new SqlConnection(@"server =192.168.100.92;database = dossierMarcher ; user id = log1; password=P@ssword1965** ;MultipleActiveResultSets = True;"))
+            {
+                try
+                {
+                    connection.Open();
+                    return true;
+                }
+                catch (SqlException)
+                {
+                    return false;
+                }
+            }
 
         }
 
@@ -626,6 +645,57 @@ async Task<UserCredential> AuthorizeToGoogle() {
         private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
         {
            
+        }
+
+        private void Form1_Activated(object sender, EventArgs e)
+        {
+          
+        }
+        int counter = 0;
+
+        private void mytimer_Tick(object sender, EventArgs e)
+        {
+            counter++;
+            if (counter == 10)  //or whatever your limit is
+            {
+                if (ss() == false && testcn() == false)
+                {
+                    XtraMessageBoxArgs args = new XtraMessageBoxArgs();
+                    args.AutoCloseOptions.Delay = 2000;
+                    args.Caption = "Auto-close message";
+                    args.Text = "access internet connection deny";
+                    args.Buttons = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
+                    //     MessageBox.Show(ex.Message);
+                    XtraMessageBox.Show(args).ToString();
+
+                }
+                else
+                {
+                    foreach (var item in LoadEvents(service, "ohsaurskmltarugmcflkp758i4@group.calendar.google.com", CancellationToken.None))
+                    {
+                        //CalendarService service = new CalendarService();
+                        string calendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                        service.Events.Delete(calendarId, item.Id).Execute();
+
+                        // MessageBox.Show(item.Id);
+                        //rest of the fields
+
+                    }
+
+                    this.appointmentsTableAdapter.Fill(this.dossierMarcherDataSet.Appointments);
+
+                    this.gcSyncComponent.CalendarId = "ohsaurskmltarugmcflkp758i4@group.calendar.google.com";
+                    this.gcSyncComponent.Synchronize();
+                }
+
+                mytimer.Stop();
+            }
+
+
+
+
+            //mytimer.Stop();
+            // mytimer.Enabled = false;
         }
     }
 }
