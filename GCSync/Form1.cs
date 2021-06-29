@@ -171,6 +171,12 @@ async Task<UserCredential> AuthorizeToGoogle() {
             RegistryKey reg = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             reg.SetValue("GCSync", Application.ExecutablePath.ToString());
 
+            WindowState = FormWindowState.Minimized;
+            this.ShowInTaskbar = false;
+            notifyIcon1.BalloonTipText = "votre application a été réduite dans la barre d'état système";
+            notifyIcon1.ShowBalloonTip(200);
+            notifyIcon1.Visible = true;
+
             XtraMessageBoxArgs args = new XtraMessageBoxArgs();
             args.AutoCloseOptions.Delay = 3000;
             args.Caption = "Auto-close message";
